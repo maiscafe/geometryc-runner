@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometryc Runner</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #0a0a0a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #gameArea {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(45deg, #0a0a0a, #1a1a1a);
+            overflow: hidden;
+            box-shadow: inset 0 0 100px rgba(128, 0, 255, 0.3);
+        }
+        
+        #player {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #c17aff, #8a2be2);
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            transition: all 0.1s linear;
+        }
+
+        .enemy {
+            width: 30px;
+            height: 30px;
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(153, 50, 204, 0.7);
+            transition: all 0.1s linear;
+        }
+
+        .enemy-purple {
+            background: radial-gradient(circle at 30% 30%, #ff79c6, #bd93f9);
+        }
+
+        .enemy-green {
+            background: radial-gradient(circle at 30% 30%, #50fa7b, #00b894);
+        }
+        
+        .enemy-yellow {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #f1fa8c, #ffb86c);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(241, 250, 140, 0.7);
+        }
+        
+        .enemy-yellow.piscando {
+            animation: piscar 0.5s infinite alternate;
+        }
+        
+        @keyframes piscar {
+            0% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        
+        .explosion {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #ff79c6, #bd93f9, transparent);
+            border-radius: 50%;
+            animation: explode 0.5s forwards;
+            z-index: 100;
+        }
+        
+        @keyframes explode {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        .obstacle {
+            width: 50px;
+            height: 50px;
+            background-color: #2d2d2d;
+            position: absolute;
+            border-radius: 5px;
+            animation: pulsar 2s infinite alternate;
+            transition: all 0.3s ease;
+            border: 1px solid #8a2be2;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+        }
+
+        @keyframes pulsar {
+            from { transform: scale(1); box-shadow: 0 0 10px rgba(138, 43, 226, 0.5); }
+            to { transform: scale(1.05); box-shadow: 0 0 20px rgba(138, 43, 226, 0.8); }
+        }
+
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 10, 10, 0.9);
+            color: #bd93f9;
+            padding: 40px;
+            text-align: center;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+            border: 1px solid #8a2be2;
+        }
+
+        #gameOver button {
+            padding: 12px 25px;
+            font-size: 18px;
+            background: transparent;
+            border: 2px solid #8a2be2;
+            color: #bd93f9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #gameOver button:hover {
+            background: #8a2be2;
+            color: white;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            transform: scale(1.05);
+        }
+
+        #timer {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #bd93f9;
+            font-size: 28px;
+            font-weight: bold;
+            background: rgba(10, 10, 10, 0.7);
+            padding: 10px 25px;
+            border-radius: 50px;
+            z-index: 100;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+            border: 1px solid #8a2be2;
+            letter-spacing: 2px;
+        }
+
+        /* Estilos para a tela inicial */
+        #telaInicial {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            box-shadow: inset 0 0 150px rgba(138, 43, 226, 0.3);
+        }
+
+        #telaInicial h1 {
+            color: #bd93f9;
+            font-size: 60px;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .menu-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: transparent;
+            color: #bd93f9;
+            border: 2px solid #8a2be2;
+            border-radius: 50px;
+            margin: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 220px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-button:hover {
+            background: #8a2be2;
+            color: white;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            transform: scale(1.05);
+        }
+
+        .menu-button::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #8a2be2, #bd93f9, #8a2be2);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .menu-button:hover::before {
+            opacity: 1;
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #ultimaPontuacao, #melhorPontuacao {
+            color: #bd93f9;
+            font-size: 18px;
+            margin: 8px 0;
+            letter-spacing: 1px;
+        }
+
+        #pontuacoes {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(10, 10, 10, 0.7);
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #8a2be2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+        }
+        
+        /* Estilos para o ranking */
+        #telaRanking {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            box-shadow: inset 0 0 150px rgba(138, 43, 226, 0.3);
+        }
+        
+        #telaRanking h2 {
+            color: #bd93f9;
+            font-size: 42px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        #rankingList {
+            width: 80%;
+            max-width: 550px;
+            background: rgba(10, 10, 10, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #8a2be2;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+        }
+        
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid #8a2be2;
+            color: #f8f8f2;
+            margin-bottom: 5px;
+        }
+        
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ranking-position {
+            font-weight: bold;
+            color: #bd93f9;
+            width: 30px;
+        }
+        
+        .ranking-nick {
+            flex-grow: 1;
+            text-align: left;
+            padding-left: 15px;
+            color: #f8f8f2;
+        }
+        
+        .ranking-tempo {
+            font-weight: bold;
+            color: #bd93f9;
+        }
+        
+        /* Estilos para o formulário de nick */
+        #nickForm {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 10, 10, 0.9);
+            color: #bd93f9;
+            padding: 40px;
+            text-align: center;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+            z-index: 300;
+            border: 1px solid #8a2be2;
+        }
+        
+        #nickForm h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #bd93f9;
+        }
+        
+        #nickForm input {
+            padding: 12px 15px;
+            font-size: 16px;
+            width: 220px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #8a2be2;
+            background: rgba(30, 30, 30, 0.8);
+            color: #f8f8f2;
+            outline: none;
+        }
+        
+        #nickForm input:focus {
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.8);
+        }
+        
+        #nickForm button {
+            padding: 12px 25px;
+            font-size: 18px;
+            background: transparent;
+            border: 2px solid #8a2be2;
+            color: #bd93f9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        #nickForm button:hover {
+            background: #8a2be2;
+            color: white;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="timer">00:00</div>
+        <div id="player"></div>
+        <div id="enemy" class="enemy enemy-purple"></div>
+        <div id="enemy2" class="enemy enemy-green"></div>
+        <div id="gameOver">
+            <h2>Fim de Jogo!</h2>
+            <p>Sua sobrevivência: <span id="tempoFinal">00:00</span></p>
+            <button onclick="voltarTelaInicial()">Voltar ao Menu</button>
+        </div>
+        <div id="telaInicial">
+            <h1>Geometryc Runner</h1>
+            <div class="menu-button" onclick="iniciarNovoJogo()">Iniciar Aventura</div>
+            <div class="menu-button" onclick="verRanking()">Hall da Fama</div>
+            <div class="menu-button" onclick="abrirLoja()">Arsenal</div>
+            <div class="menu-button" onclick="fazerDoacao()">Apoiar</div>
+            <div id="pontuacoes" style="display: none;">
+                <p id="ultimaPontuacao">Última sobrevivência: 00:00</p>
+                <p id="melhorPontuacao">Melhor sobrevivência: 00:00</p>
+            </div>
+        </div>
+        <div id="telaRanking">
+            <h2>Hall da Fama</h2>
+            <div id="rankingList">
+                <!-- Ranking será preenchido dinamicamente -->
+            </div>
+            <div class="menu-button" onclick="voltarTelaInicial()">Voltar ao Menu</div>
+        </div>
+        <div id="nickForm">
+            <h3>Impressionante!</h3>
+            <p>Sua sobrevivência: <span id="tempoNick">00:00</span></p>
+            <p>Digite seu nome para o Hall da Fama:</p>
+            <input type="text" id="playerNick" maxlength="15" placeholder="Seu nome">
+            <button onclick="salvarNick()">Registrar</button>
+        </div>
+    </div>
+
+    <script>
+        const player = document.getElementById('player');
+        const enemy = document.getElementById('enemy');
+        const enemy2 = document.getElementById('enemy2');
+        const gameArea = document.getElementById('gameArea');
+        const gameOver = document.getElementById('gameOver');
+        const timerElement = document.getElementById('timer');
+        const tempoFinalElement = document.getElementById('tempoFinal');
+        const telaInicial = document.getElementById('telaInicial');
+        const ultimaPontuacaoElement = document.getElementById('ultimaPontuacao');
+        const melhorPontuacaoElement = document.getElementById('melhorPontuacao');
+        const pontuacoesDiv = document.getElementById('pontuacoes');
+        const telaRanking = document.getElementById('telaRanking');
+        const rankingList = document.getElementById('rankingList');
+        const nickForm = document.getElementById('nickForm');
+        const tempoNickElement = document.getElementById('tempoNick');
+        const playerNickInput = document.getElementById('playerNick');
+        
+        let startTime;
+        let playerPos = { x: window.innerWidth/2, y: window.innerHeight/2 };
+        let enemyPos = { x: 50, y: 50 };
+        let enemy2Pos = { x: window.innerWidth - 80, y: window.innerHeight - 80 };
+        const playerSpeed = 7;
+        const enemySpeed = 4;
+        const enemy2Speed = 3;
+        const obstacles = [];
+        let gameLoop;
+        let teclasPressionadas = {};
+        let obstacleMovementInterval;
+        let navMeshPoints = [];
+        let timerInterval;
+        let spawnInterval;
+        let enemies = [
+            {element: enemy, pos: enemyPos, speed: enemySpeed, type: 'purple', direcao: Math.random() * 2 * Math.PI},
+            {element: enemy2, pos: enemy2Pos, speed: enemy2Speed, type: 'green'}
+        ];
+        // Variável para controlar o número máximo de inimigos
+        const MAX_ENEMIES = 100;
+        // Variável para limitar a frequência de geração de navMesh
+        let lastNavMeshUpdate = 0;
+        const NAV_MESH_UPDATE_INTERVAL = 1000; // 1 segundo
+        // Variáveis para armazenar pontuações
+        let ultimaPontuacao = "00:00";
+        let melhorPontuacao = "00:00";
+        let jogoEmAndamento = false;
+        // Array para armazenar o ranking
+        let ranking = [];
+        // Tempo atual para salvar no ranking
+        let tempoAtual = "00:00";
+
+        // Funções para a tela inicial
+        function iniciarNovoJogo() {
+            telaInicial.style.display = 'none';
+            telaRanking.style.display = 'none';
+            pontuacoesDiv.style.display = 'none';
+            reiniciarJogo();
+            jogoEmAndamento = true;
+        }
+
+        function verRanking() {
+            telaInicial.style.display = 'none';
+            telaRanking.style.display = 'flex';
+            atualizarTelaRanking();
+        }
+
+        function atualizarTelaRanking() {
+            // Limpar lista atual
+            rankingList.innerHTML = '';
+            
+            // Carregar ranking do localStorage
+            carregarRanking();
+            
+            // Exibir os 10 melhores
+            const top10 = ranking.slice(0, 10);
+            
+            if (top10.length === 0) {
+                rankingList.innerHTML = '<div class="ranking-item">Nenhuma pontuação registrada ainda</div>';
+            } else {
+                top10.forEach((item, index) => {
+                    const rankingItem = document.createElement('div');
+                    rankingItem.className = 'ranking-item';
+                    
+                    const position = document.createElement('div');
+                    position.className = 'ranking-position';
+                    position.textContent = `${index + 1}.`;
+                    
+                    const nick = document.createElement('div');
+                    nick.className = 'ranking-nick';
+                    nick.textContent = item.nick;
+                    
+                    const tempo = document.createElement('div');
+                    tempo.className = 'ranking-tempo';
+                    tempo.textContent = item.tempo;
+                    
+                    rankingItem.appendChild(position);
+                    rankingItem.appendChild(nick);
+                    rankingItem.appendChild(tempo);
+                    
+                    rankingList.appendChild(rankingItem);
+                });
+            }
+        }
+
+        function abrirLoja() {
+            alert("Loja em desenvolvimento!");
+        }
+
+        function fazerDoacao() {
+            alert("Funcionalidade de doação em desenvolvimento!");
+        }
+
+        function voltarTelaInicial() {
+            gameOver.style.display = 'none';
+            telaRanking.style.display = 'none';
+            telaInicial.style.display = 'flex';
+            pontuacoesDiv.style.display = 'block';
+            jogoEmAndamento = false;
+            
+            // Parar todos os loops e intervalos do jogo
+            pararJogo();
+            
+            // Atualizar e mostrar as pontuações
+            atualizarPontuacoes();
+        }
+
+        function atualizarPontuacoes() {
+            ultimaPontuacaoElement.textContent = `Última sobrevivência: ${ultimaPontuacao}`;
+            melhorPontuacaoElement.textContent = `Melhor sobrevivência: ${melhorPontuacao}`;
+        }
+
+        // Funções para manipular cookies
+        function setCookie(nome, valor, dias) {
+            const data = new Date();
+            data.setTime(data.getTime() + (dias * 24 * 60 * 60 * 1000));
+            const expira = `expires=${data.toUTCString()}`;
+            document.cookie = `${nome}=${valor};${expira};path=/`;
+        }
+
+        function getCookie(nome) {
+            const nomeCookie = `${nome}=`;
+            const cookies = document.cookie.split(';');
+            for(let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.indexOf(nomeCookie) === 0) {
+                    return cookie.substring(nomeCookie.length, cookie.length);
+                }
+            }
+            return "";
+        }
+
+        function salvarPontuacao(tempo) {
+            ultimaPontuacao = tempo;
+            setCookie("ultimaPontuacao", tempo, 30);
+            tempoAtual = tempo;
+            
+            // Verificar se é a melhor pontuação
+            const melhorSalva = getCookie("melhorPontuacao");
+            if (melhorSalva === "" || compararTempos(tempo, melhorSalva)) {
+                melhorPontuacao = tempo;
+                setCookie("melhorPontuacao", tempo, 30);
+            } else {
+                melhorPontuacao = melhorSalva;
+            }
+            
+            // Mostrar formulário para inserir nick
+            mostrarFormularioNick(tempo);
+        }
+        
+        function mostrarFormularioNick(tempo) {
+            tempoNickElement.textContent = tempo;
+            nickForm.style.display = 'block';
+            playerNickInput.value = '';
+            playerNickInput.maxLength = 15; // Limitar a 15 caracteres
+            playerNickInput.focus();
+        }
+        
+        function salvarNick() {
+            const nick = playerNickInput.value.trim() || "Anônimo";
+            
+            // Adicionar ao ranking
+            adicionarAoRanking(nick.substring(0, 15), tempoAtual);
+            
+            // Fechar formulário
+            nickForm.style.display = 'none';
+            
+            // Mostrar ranking
+            verRanking();
+        }
+        
+        function adicionarAoRanking(nick, tempo) {
+            // Carregar ranking atual
+            carregarRanking();
+            
+            // Adicionar nova entrada
+            ranking.push({
+                nick: nick,
+                tempo: tempo
+            });
+            
+            // Ordenar ranking (tempos maiores são melhores)
+            ranking.sort((a, b) => {
+                return compararTempos(a.tempo, b.tempo) ? -1 : 1;
+            });
+            
+            // Salvar ranking atualizado
+            salvarRanking();
+        }
+        
+        function carregarRanking() {
+            const rankingJSON = localStorage.getItem('ranking');
+            if (rankingJSON) {
+                ranking = JSON.parse(rankingJSON);
+            } else {
+                ranking = [];
+            }
+        }
+        
+        function salvarRanking() {
+            localStorage.setItem('ranking', JSON.stringify(ranking));
+        }
+
+        function compararTempos(tempo1, tempo2) {
+            // Converter tempos no formato "MM:SS" para segundos
+            const [min1, seg1] = tempo1.split(':').map(Number);
+            const [min2, seg2] = tempo2.split(':').map(Number);
+            
+            const totalSeg1 = min1 * 60 + seg1;
+            const totalSeg2 = min2 * 60 + seg2;
+            
+            // Retorna true se tempo1 for maior (melhor) que tempo2
+            return totalSeg1 > totalSeg2;
+        }
+
+        function carregarPontuacoes() {
+            const ultimaSalva = getCookie("ultimaPontuacao");
+            const melhorSalva = getCookie("melhorPontuacao");
+            
+            if (ultimaSalva !== "") {
+                ultimaPontuacao = ultimaSalva;
+            }
+            
+            if (melhorSalva !== "") {
+                melhorPontuacao = melhorSalva;
+            }
+            
+            atualizarPontuacoes();
+        }
+
+        function criarNovoInimigo() {
+            // Limitar o número máximo de inimigos para evitar sobrecarga
+            if (enemies.length >= MAX_ENEMIES) return;
+            
+            // Determinar o tipo de inimigo a ser criado (incluindo o amarelo)
+            const random = Math.random();
+            let tipoInimigo;
+            
+            if (random < 0.2) {
+                // 20% de chance de criar inimigo amarelo
+                return criarInimigoAmarelo(); // Retornar aqui pois criarInimigoAmarelo já adiciona à lista
+            } else if (random < 0.5) {
+                // 40% de chance de criar inimigo roxo
+                tipoInimigo = 'purple';
+            } else {
+                // 50% de chance de criar inimigo verde
+                tipoInimigo = 'green';
+            }
+            
+            const velocidadeBase = tipoInimigo === 'purple' ? enemySpeed : enemy2Speed;
+            // Adicionar aleatoriedade à velocidade (até 50% a mais)
+            const fatorVelocidade = 1 + Math.random() * 0.5;
+            const velocidadeFinal = velocidadeBase * fatorVelocidade;
+            
+            const novoInimigo = document.createElement('div');
+            novoInimigo.className = `enemy enemy-${tipoInimigo}`;
+            gameArea.appendChild(novoInimigo);
+
+            // Limitar tentativas de posicionamento para evitar loops infinitos
+            let tentativas = 0;
+            let pos;
+            do {
+                pos = {
+                    x: Math.random() * (window.innerWidth - 30),
+                    y: Math.random() * (window.innerHeight - 30)
+                };
+                tentativas++;
+                if (tentativas > 50) return; // Desistir após muitas tentativas
+            } while(checkCollision(pos.x, pos.y) || checkEnemyCollision(pos.x, pos.y));
+
+            enemies.push({
+                element: novoInimigo,
+                pos: pos,
+                speed: velocidadeFinal,
+                type: tipoInimigo,
+                direcao: tipoInimigo === 'purple' ? Math.random() * 2 * Math.PI : null,
+                // Adicionar um offset aleatório para cada inimigo
+                offset: {
+                    x: Math.random() * 100 - 50,
+                    y: Math.random() * 100 - 50
+                }
+            });
+        }
+        
+        function criarInimigoAmarelo() {
+            // Criar inimigo amarelo (bomba)
+            const inimigoAmarelo = document.createElement('div');
+            inimigoAmarelo.className = 'enemy enemy-yellow';
+            gameArea.appendChild(inimigoAmarelo);
+            
+            // Encontrar uma posição válida para o inimigo amarelo
+            let tentativas = 0;
+            let pos;
+            do {
+                pos = {
+                    x: Math.random() * (window.innerWidth - 30),
+                    y: Math.random() * (window.innerHeight - 30)
+                };
+                tentativas++;
+                if (tentativas > 50) return null; // Desistir após muitas tentativas
+            } while(checkCollision(pos.x, pos.y) || checkEnemyCollision(pos.x, pos.y));
+            
+            const novoInimigo = {
+                element: inimigoAmarelo,
+                pos: pos,
+                speed: 0, // Inimigo amarelo não se move
+                type: 'yellow',
+                tempoParaExplodir: 10000, // 10 segundos para explodir
+                inicioPiscando: false
+            };
+            
+            enemies.push(novoInimigo);
+            
+            // Atualizar a posição do elemento
+            inimigoAmarelo.style.left = pos.x + 'px';
+            inimigoAmarelo.style.top = pos.y + 'px';
+            
+            // Iniciar contagem regressiva para explosão
+            setTimeout(() => {
+                if (novoInimigo.element && novoInimigo.element.parentNode) {
+                    // Começar a piscar após 5 segundos
+                    novoInimigo.inicioPiscando = true;
+                    novoInimigo.element.classList.add('piscando');
+                    
+                    // Explodir após mais 5 segundos
+                    setTimeout(() => {
+                        if (novoInimigo.element && novoInimigo.element.parentNode) {
+                            explodir(novoInimigo);
+                        }
+                    }, 5000);
+                }
+            }, 5000);
+            
+            return novoInimigo;
+        }
+        
+        function explodir(inimigoAmarelo) {
+            // Raio da explosão
+            const raioExplosao = 150;
+            
+            // Criar efeito visual de explosão grande
+            const explosao = document.createElement('div');
+            explosao.className = 'explosion';
+            explosao.style.width = (raioExplosao * 2) + 'px';
+            explosao.style.height = (raioExplosao * 2) + 'px';
+            explosao.style.left = (inimigoAmarelo.pos.x - raioExplosao + 15) + 'px'; // Centralizar a explosão
+            explosao.style.top = (inimigoAmarelo.pos.y - raioExplosao + 15) + 'px';
+            gameArea.appendChild(explosao);
+            
+            // Verificar se o jogador está dentro do raio da explosão
+            const distanciaAoJogador = Math.sqrt(
+                Math.pow(playerPos.x + 15 - (inimigoAmarelo.pos.x + 15), 2) + 
+                Math.pow(playerPos.y + 15 - (inimigoAmarelo.pos.y + 15), 2)
+            );
+            
+            if (distanciaAoJogador <= raioExplosao) {
+                // Jogador atingido pela explosão
+                fimDeJogo();
+            }
+            
+            // Verificar quais inimigos estão dentro do raio da explosão
+            const inimigosParaRemover = [];
+            
+            for (let i = 0; i < enemies.length; i++) {
+                const enemy = enemies[i];
+                if (enemy === inimigoAmarelo) continue; // Pular o próprio inimigo amarelo
+                
+                const distancia = Math.sqrt(
+                    Math.pow(enemy.pos.x + 15 - (inimigoAmarelo.pos.x + 15), 2) + 
+                    Math.pow(enemy.pos.y + 15 - (inimigoAmarelo.pos.y + 15), 2)
+                );
+                
+                if (distancia <= raioExplosao) {
+                    inimigosParaRemover.push(i);
+                }
+            }
+            
+            // Remover inimigos atingidos pela explosão (de trás para frente para não afetar os índices)
+            for (let i = inimigosParaRemover.length - 1; i >= 0; i--) {
+                const indice = inimigosParaRemover[i];
+                if (enemies[indice] && enemies[indice].element) {
+                    enemies[indice].element.remove();
+                    enemies.splice(indice, 1);
+                }
+            }
+            
+            // Remover o inimigo amarelo que explodiu
+            const indiceAmarelo = enemies.indexOf(inimigoAmarelo);
+            if (indiceAmarelo !== -1) {
+                enemies.splice(indiceAmarelo, 1);
+            }
+            inimigoAmarelo.element.remove();
+            
+            // Remover a explosão após a animação terminar
+            setTimeout(() => {
+                if (explosao.parentNode) {
+                    explosao.remove();
+                }
+            }, 500);
+        }
+        
+        function criarExplosao(x, y) {
+            const explosao = document.createElement('div');
+            explosao.className = 'explosion';
+            explosao.style.width = '50px';
+            explosao.style.height = '50px';
+            explosao.style.backgroundColor = 'orange';
+            explosao.style.borderRadius = '50%';
+            explosao.style.position = 'absolute';
+            explosao.style.zIndex = '200';
+            explosao.style.animation = 'explode 0.5s forwards';
+            explosao.style.left = (x - 25) + 'px'; // Centralizar a explosão
+            explosao.style.top = (y - 25) + 'px';
+            gameArea.appendChild(explosao);
+            
+            // Adicionar estilo de animação se não existir
+            if (!document.getElementById('explosionAnimation')) {
+                const style = document.createElement('style');
+                style.id = 'explosionAnimation';
+                style.innerHTML = `
+                    @keyframes explode {
+                        0% { transform: scale(0.1); opacity: 1; }
+                        100% { transform: scale(2); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Remover a explosão após a animação terminar
+            setTimeout(() => {
+                if (explosao.parentNode) {
+                    explosao.remove();
+                }
+            }, 500);
+        }
+
+        function atualizarTimer() {
+            const tempoDecorrido = Math.floor((Date.now() - startTime) / 1000);
+            const minutos = Math.floor(tempoDecorrido / 60);
+            const segundos = tempoDecorrido % 60;
+            timerElement.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+        }
+
+        function gerarNavMeshPoints() {
+            // Verificar se já passou tempo suficiente desde a última atualização
+            const agora = Date.now();
+            if (agora - lastNavMeshUpdate < NAV_MESH_UPDATE_INTERVAL) return;
+            lastNavMeshUpdate = agora;
+            
+            navMeshPoints = [];
+            const gridSize = 30;
+            // Limitar o número de pontos para evitar sobrecarga
+            const maxPoints = 200;
+            let pointCount = 0;
+            
+            for(let x = 0; x < window.innerWidth; x += gridSize) {
+                if (pointCount >= maxPoints) break;
+                
+                for(let y = 0; y < window.innerHeight; y += gridSize) {
+                    if (pointCount >= maxPoints) break;
+                    
+                    if(!checkCollision(x, y) && !checkEnemyCollision(x, y)) {
+                        let pontoValido = true;
+                        
+                        // Simplificar a verificação para melhorar performance
+                        for(let dx = -gridSize; dx <= gridSize; dx += gridSize) {
+                            for(let dy = -gridSize; dy <= gridSize; dy += gridSize) {
+                                if(checkCollision(x + dx, y + dy)) {
+                                    pontoValido = false;
+                                    break;
+                                }
+                            }
+                            if(!pontoValido) break;
+                        }
+                        
+                        if(pontoValido) {
+                            navMeshPoints.push({x, y, f: 0, g: 0, h: 0, parent: null});
+                            pointCount++;
+                        }
+                    }
+                }
+            }
+        }
+
+        function encontrarProximoPonto(posAtual) {
+            // Se não houver pontos de navegação, retornar a posição do jogador
+            if (navMeshPoints.length === 0) return playerPos;
+            
+            let pontoMaisProximo = null;
+            let menorDistancia = Infinity;
+
+            // Simplificar para apenas encontrar o ponto mais próximo ao jogador
+            // em vez de usar A* completo, que pode ser pesado
+            for (let ponto of navMeshPoints) {
+                const distAoJogador = Math.sqrt(
+                    Math.pow(playerPos.x - ponto.x, 2) + 
+                    Math.pow(playerPos.y - ponto.y, 2)
+                );
+                
+                if (distAoJogador < menorDistancia) {
+                    menorDistancia = distAoJogador;
+                    pontoMaisProximo = ponto;
+                }
+            }
+            
+            return pontoMaisProximo || playerPos;
+        }
+
+        function criarObstaculos() {
+            const numObstacles = Math.min(15, Math.floor(window.innerWidth * window.innerHeight / 50000));
+            
+            for(let i = 0; i < numObstacles; i++) {
+                const pos = {
+                    x: Math.random() * (window.innerWidth - 50),
+                    y: Math.random() * (window.innerHeight - 50)
+                };
+                
+                const obstacle = document.createElement('div');
+                obstacle.className = 'obstacle';
+                obstacle.style.left = pos.x + 'px';
+                obstacle.style.top = pos.y + 'px';
+                obstacle.style.transform = `rotate(${Math.random() * 360}deg)`;
+                gameArea.appendChild(obstacle);
+                
+                obstacles.push({
+                    element: obstacle,
+                    x: pos.x,
+                    y: pos.y,
+                    width: 50,
+                    height: 50,
+                    velocidadeX: (Math.random() - 0.5) * 2,
+                    velocidadeY: (Math.random() - 0.5) * 2
+                });
+            }
+            
+            gerarNavMeshPoints();
+        }
+
+        function moverObstaculos() {
+            obstacles.forEach(obstacle => {
+                const novoX = obstacle.x + obstacle.velocidadeX;
+                const novoY = obstacle.y + obstacle.velocidadeY;
+
+                // Verificar se o novo movimento do obstáculo não colide com inimigos
+                if(!checkEnemyCollision(novoX, novoY)) {
+                    // Verificar se o jogador não está no caminho do obstáculo
+                    const playerRect = {
+                        x: playerPos.x,
+                        y: playerPos.y,
+                        width: 30,
+                        height: 30
+                    };
+                    
+                    const obstacleRect = {
+                        x: novoX,
+                        y: novoY,
+                        width: 50,
+                        height: 50
+                    };
+                    
+                    if (!(playerRect.x < obstacleRect.x + obstacleRect.width &&
+                        playerRect.x + playerRect.width > obstacleRect.x &&
+                        playerRect.y < obstacleRect.y + obstacleRect.height &&
+                        playerRect.y + playerRect.height > obstacleRect.y)) {
+                        
+                        obstacle.x = novoX;
+                        obstacle.y = novoY;
+
+                        if(obstacle.x <= 0 || obstacle.x >= window.innerWidth - 50) {
+                            obstacle.velocidadeX *= -1;
+                        }
+                        if(obstacle.y <= 0 || obstacle.y >= window.innerHeight - 50) {
+                            obstacle.velocidadeY *= -1;
+                        }
+
+                        obstacle.element.style.left = obstacle.x + 'px';
+                        obstacle.element.style.top = obstacle.y + 'px';
+                        obstacle.element.style.transform = `rotate(${Date.now() / 50 % 360}deg)`;
+                    } else {
+                        // Se o jogador está no caminho, inverter a direção
+                        obstacle.velocidadeX *= -1;
+                        obstacle.velocidadeY *= -1;
+                    }
+                } else {
+                    // Se há colisão com inimigos, inverter a direção
+                    obstacle.velocidadeX *= -1;
+                    obstacle.velocidadeY *= -1;
+                }
+            });
+            
+            // Verificar se algum obstáculo está colidindo com o jogador ou inimigos após o movimento
+            verificarColisoesPosMovimento();
+        }
+        
+        function verificarColisoesPosMovimento() {
+            // Verificar colisões com o jogador
+            for (let obstacle of obstacles) {
+                if (playerPos.x < obstacle.x + obstacle.width &&
+                    playerPos.x + 30 > obstacle.x &&
+                    playerPos.y < obstacle.y + obstacle.height &&
+                    playerPos.y + 30 > obstacle.y) {
+                    
+                    // Calcular a direção para empurrar o jogador para fora do obstáculo
+                    const centroObstaculoX = obstacle.x + obstacle.width / 2;
+                    const centroObstaculoY = obstacle.y + obstacle.height / 2;
+                    const centroJogadorX = playerPos.x + 15;
+                    const centroJogadorY = playerPos.y + 15;
+                    
+                    const direcaoX = centroJogadorX - centroObstaculoX;
+                    const direcaoY = centroJogadorY - centroObstaculoY;
+                    
+                    // Normalizar a direção
+                    const comprimento = Math.sqrt(direcaoX * direcaoX + direcaoY * direcaoY);
+                    const normalX = direcaoX / comprimento;
+                    const normalY = direcaoY / comprimento;
+                    
+                    // Empurrar o jogador para fora
+                    playerPos.x += normalX * 5;
+                    playerPos.y += normalY * 5;
+                    
+                    // Garantir que o jogador não saia da tela
+                    playerPos.x = Math.max(0, Math.min(window.innerWidth - 30, playerPos.x));
+                    playerPos.y = Math.max(0, Math.min(window.innerHeight - 30, playerPos.y));
+                    
+                    updatePlayerPosition();
+                }
+            }
+            
+            // Verificar colisões com os inimigos
+            for (let enemy of enemies) {
+                for (let obstacle of obstacles) {
+                    if (enemy.pos.x < obstacle.x + obstacle.width &&
+                        enemy.pos.x + 30 > obstacle.x &&
+                        enemy.pos.y < obstacle.y + obstacle.height &&
+                        enemy.pos.y + 30 > obstacle.y) {
+                        
+                        // Calcular a direção para empurrar o inimigo para fora do obstáculo
+                        const centroObstaculoX = obstacle.x + obstacle.width / 2;
+                        const centroObstaculoY = obstacle.y + obstacle.height / 2;
+                        const centroInimigoX = enemy.pos.x + 15;
+                        const centroInimigoY = enemy.pos.y + 15;
+                        
+                        const direcaoX = centroInimigoX - centroObstaculoX;
+                        const direcaoY = centroInimigoY - centroObstaculoY;
+                        
+                        // Normalizar a direção
+                        const comprimento = Math.sqrt(direcaoX * direcaoX + direcaoY * direcaoY);
+                        if (comprimento > 0) { // Evitar divisão por zero
+                            const normalX = direcaoX / comprimento;
+                            const normalY = direcaoY / comprimento;
+                            
+                            // Empurrar o inimigo para fora
+                            enemy.pos.x += normalX * 5;
+                            enemy.pos.y += normalY * 5;
+                            
+                            // Garantir que o inimigo não saia da tela
+                            enemy.pos.x = Math.max(0, Math.min(window.innerWidth - 30, enemy.pos.x));
+                            enemy.pos.y = Math.max(0, Math.min(window.innerHeight - 30, enemy.pos.y));
+                            
+                            // Se for inimigo roxo, mudar sua direção
+                            if (enemy.type === 'purple') {
+                                enemy.direcao = Math.atan2(normalY, normalX);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Verificar colisões entre inimigos e separá-los
+            resolverColisoesEntreInimigos();
+            
+            updateEnemyPosition();
+        }
+        
+        function resolverColisoesEntreInimigos() {
+            for (let i = 0; i < enemies.length; i++) {
+                for (let j = i + 1; j < enemies.length; j++) {
+                    const enemy1 = enemies[i];
+                    const enemy2 = enemies[j];
+                    
+                    // Calcular distância entre os centros dos inimigos
+                    const dx = enemy1.pos.x + 15 - (enemy2.pos.x + 15);
+                    const dy = enemy1.pos.y + 15 - (enemy2.pos.y + 15);
+                    const distancia = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Se estiverem colidindo (distância menor que a soma dos raios)
+                    if (distancia < 30) { // 30 = 15 + 15 (raio de cada inimigo)
+                        // Calcular vetor de separação normalizado
+                        let separacaoX = dx;
+                        let separacaoY = dy;
+                        
+                        // Evitar divisão por zero
+                        if (distancia > 0) {
+                            separacaoX /= distancia;
+                            separacaoY /= distancia;
+                        } else {
+                            // Se a distância for zero (estão exatamente no mesmo lugar)
+                            // Mover em uma direção aleatória
+                            const angulo = Math.random() * 2 * Math.PI;
+                            separacaoX = Math.cos(angulo);
+                            separacaoY = Math.sin(angulo);
+                        }
+                        
+                        // Calcular quanto eles precisam se mover para não colidirem
+                        const sobreposicao = 30 - distancia;
+                        
+                        // Mover cada inimigo na direção oposta proporcionalmente à sua velocidade
+                        const totalSpeed = enemy1.speed + enemy2.speed;
+                        const peso1 = enemy2.speed / totalSpeed;
+                        const peso2 = enemy1.speed / totalSpeed;
+                        
+                        // Aplicar movimento de separação com um fator adicional para garantir que se separem bem
+                        const fatorSeparacao = 1.5;
+                        
+                        // Mover o primeiro inimigo
+                        enemy1.pos.x += separacaoX * sobreposicao * peso1 * fatorSeparacao;
+                        enemy1.pos.y += separacaoY * sobreposicao * peso1 * fatorSeparacao;
+                        
+                        // Mover o segundo inimigo na direção oposta
+                        enemy2.pos.x -= separacaoX * sobreposicao * peso2 * fatorSeparacao;
+                        enemy2.pos.y -= separacaoY * sobreposicao * peso2 * fatorSeparacao;
+                        
+                        // Garantir que os inimigos não saiam da tela
+                        enemy1.pos.x = Math.max(0, Math.min(window.innerWidth - 30, enemy1.pos.x));
+                        enemy1.pos.y = Math.max(0, Math.min(window.innerHeight - 30, enemy1.pos.y));
+                        enemy2.pos.x = Math.max(0, Math.min(window.innerWidth - 30, enemy2.pos.x));
+                        enemy2.pos.y = Math.max(0, Math.min(window.innerHeight - 30, enemy2.pos.y));
+                        
+                        // Se forem inimigos roxos, atualizar suas direções
+                        if (enemy1.type === 'purple') {
+                            enemy1.direcao = Math.atan2(separacaoY, separacaoX);
+                        }
+                        if (enemy2.type === 'purple') {
+                            enemy2.direcao = Math.atan2(-separacaoY, -separacaoX);
+                        }
+                        
+                        // Para inimigos verdes, adicionar um pequeno desvio aleatório para evitar que fiquem presos
+                        if (enemy1.type === 'green') {
+                            const desvio = Math.random() * Math.PI / 4 - Math.PI / 8; // Desvio de até ±22.5 graus
+                            const angulo = Math.atan2(separacaoY, separacaoX) + desvio;
+                            enemy1.pos.x += Math.cos(angulo) * 2;
+                            enemy1.pos.y += Math.sin(angulo) * 2;
+                        }
+                        if (enemy2.type === 'green') {
+                            const desvio = Math.random() * Math.PI / 4 - Math.PI / 8;
+                            const angulo = Math.atan2(-separacaoY, -separacaoX) + desvio;
+                            enemy2.pos.x += Math.cos(angulo) * 2;
+                            enemy2.pos.y += Math.sin(angulo) * 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        function updatePlayerPosition() {
+            player.style.left = playerPos.x + 'px';
+            player.style.top = playerPos.y + 'px';
+        }
+
+        function updateEnemyPosition() {
+            enemies.forEach(enemy => {
+                enemy.element.style.left = enemy.pos.x + 'px';
+                enemy.element.style.top = enemy.pos.y + 'px';
+            });
+        }
+
+        function checkEnemyCollision(newX, newY, excludeEnemy = null) {
+            const enemyRect = {
+                x: newX,
+                y: newY,
+                width: 30,
+                height: 30
+            };
+
+            for(let enemy of enemies) {
+                if(enemy === excludeEnemy) continue;
+                
+                if(enemyRect.x < enemy.pos.x + 30 &&
+                   enemyRect.x + enemyRect.width > enemy.pos.x &&
+                   enemyRect.y < enemy.pos.y + 30 &&
+                   enemyRect.y + enemyRect.height > enemy.pos.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkCollision(newX, newY) {
+            const playerRect = {
+                x: newX,
+                y: newY,
+                width: 30,
+                height: 30
+            };
+
+            for (let obstacle of obstacles) {
+                if (playerRect.x < obstacle.x + obstacle.width &&
+                    playerRect.x + playerRect.width > obstacle.x &&
+                    playerRect.y < obstacle.y + obstacle.height &&
+                    playerRect.y + playerRect.height > obstacle.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function moverInimigoRoxo(enemy) {
+            // Chance de mudar de direção aleatoriamente
+            if (Math.random() < 0.02) {
+                enemy.direcao = Math.random() * 2 * Math.PI;
+            }
+            
+            let novoX = enemy.pos.x + Math.cos(enemy.direcao) * enemy.speed;
+            let novoY = enemy.pos.y + Math.sin(enemy.direcao) * enemy.speed;
+            
+            // Verificar limites da tela
+            if (novoX < 0 || novoX > window.innerWidth - 30 || 
+                novoY < 0 || novoY > window.innerHeight - 30 || 
+                checkCollision(novoX, novoY) || 
+                checkEnemyCollision(novoX, novoY, enemy)) {
+                
+                // Mudar direção se encontrar obstáculo ou borda
+                enemy.direcao = Math.random() * 2 * Math.PI;
+                
+                // Tentar novamente com nova direção
+                novoX = enemy.pos.x + Math.cos(enemy.direcao) * enemy.speed;
+                novoY = enemy.pos.y + Math.sin(enemy.direcao) * enemy.speed;
+                
+                // Se ainda houver colisão, não mover
+                if (novoX < 0 || novoX > window.innerWidth - 30 || 
+                    novoY < 0 || novoY > window.innerHeight - 30 || 
+                    checkCollision(novoX, novoY) || 
+                    checkEnemyCollision(novoX, novoY, enemy)) {
+                    return;
+                }
+            }
+            
+            enemy.pos.x = novoX;
+            enemy.pos.y = novoY;
+        }
+
+        function moverInimigoVerde(enemy) {
+            // Adicionar offset ao alvo para evitar aglomeração
+            if (!enemy.offset) {
+                enemy.offset = {
+                    x: Math.random() * 100 - 50,
+                    y: Math.random() * 100 - 50
+                };
+            }
+            
+            // Atualizar o offset periodicamente
+            if (Math.random() < 0.01) {
+                enemy.offset.x = Math.random() * 100 - 50;
+                enemy.offset.y = Math.random() * 100 - 50;
+            }
+            
+            // Calcular direção para o jogador com offset
+            const targetX = playerPos.x + enemy.offset.x;
+            const targetY = playerPos.y + enemy.offset.y;
+            
+            const dx = targetX - enemy.pos.x;
+            const dy = targetY - enemy.pos.y;
+            const distancia = Math.sqrt(dx * dx + dy * dy);
+            
+            // Evitar divisão por zero
+            if (distancia > 0) {
+                const angulo = Math.atan2(dy, dx);
+                let novoX = enemy.pos.x + Math.cos(angulo) * enemy.speed;
+                let novoY = enemy.pos.y + Math.sin(angulo) * enemy.speed;
+
+                // Verificar se o movimento direto é possível
+                if (novoX >= 0 && novoX <= window.innerWidth - 30 && 
+                    novoY >= 0 && novoY <= window.innerHeight - 30 && 
+                    !checkCollision(novoX, novoY) && 
+                    !checkEnemyCollision(novoX, novoY, enemy)) {
+                    
+                    // Movimento direto possível
+                    enemy.pos.x = novoX;
+                    enemy.pos.y = novoY;
+                } else {
+                    // Tentar encontrar um caminho alternativo
+                    // Primeiro, tentar mover apenas em X ou apenas em Y
+                    let moveuX = false;
+                    let moveuY = false;
+                    
+                    // Tentar mover apenas em X
+                    if (dx !== 0) {
+                        const direcaoX = dx > 0 ? 1 : -1;
+                        const novoXSomente = enemy.pos.x + direcaoX * enemy.speed;
+                        
+                        if (novoXSomente >= 0 && novoXSomente <= window.innerWidth - 30 && 
+                            !checkCollision(novoXSomente, enemy.pos.y) && 
+                            !checkEnemyCollision(novoXSomente, enemy.pos.y, enemy)) {
+                            enemy.pos.x = novoXSomente;
+                            moveuX = true;
+                        }
+                    }
+                    
+                    // Tentar mover apenas em Y
+                    if (dy !== 0) {
+                        const direcaoY = dy > 0 ? 1 : -1;
+                        const novoYSomente = enemy.pos.y + direcaoY * enemy.speed;
+                        
+                        if (novoYSomente >= 0 && novoYSomente <= window.innerHeight - 30 && 
+                            !checkCollision(enemy.pos.x, novoYSomente) && 
+                            !checkEnemyCollision(enemy.pos.x, novoYSomente, enemy)) {
+                            enemy.pos.y = novoYSomente;
+                            moveuY = true;
+                        }
+                    }
+                    
+                    // Se não conseguiu mover em X nem em Y, tentar direções alternativas
+                    if (!moveuX && !moveuY) {
+                        // Tentar 8 direções diferentes para contornar obstáculos
+                        const direcoes = [
+                            { x: 1, y: 0 },   // direita
+                            { x: 1, y: 1 },   // diagonal inferior direita
+                            { x: 0, y: 1 },   // baixo
+                            { x: -1, y: 1 },  // diagonal inferior esquerda
+                            { x: -1, y: 0 },  // esquerda
+                            { x: -1, y: -1 }, // diagonal superior esquerda
+                            { x: 0, y: -1 },  // cima
+                            { x: 1, y: -1 }   // diagonal superior direita
+                        ];
+                        
+                        // Ordenar direções pela proximidade ao ângulo desejado
+                        direcoes.sort((a, b) => {
+                            const anguloA = Math.atan2(a.y, a.x);
+                            const anguloB = Math.atan2(b.y, b.x);
+                            return Math.abs(anguloA - angulo) - Math.abs(anguloB - angulo);
+                        });
+                        
+                        // Tentar cada direção até encontrar uma válida
+                        for (let dir of direcoes) {
+                            const testX = enemy.pos.x + dir.x * enemy.speed;
+                            const testY = enemy.pos.y + dir.y * enemy.speed;
+                            
+                            if (testX >= 0 && testX <= window.innerWidth - 30 && 
+                                testY >= 0 && testY <= window.innerHeight - 30 && 
+                                !checkCollision(testX, testY) && 
+                                !checkEnemyCollision(testX, testY, enemy)) {
+                                
+                                enemy.pos.x = testX;
+                                enemy.pos.y = testY;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function moverInimigo() {
+            for(let enemy of enemies) {
+                if (!enemy || !enemy.pos) continue; // Proteção contra objetos inválidos
+                
+                const dx = playerPos.x - enemy.pos.x;
+                const dy = playerPos.y - enemy.pos.y;
+                const distancia = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distancia < 15) {
+                    fimDeJogo();
+                    return;
+                }
+
+                if(enemy.type === 'purple') {
+                    moverInimigoRoxo(enemy);
+                } else {
+                    moverInimigoVerde(enemy);
+                }
+            }
+
+            updateEnemyPosition();
+        }
+
+        function fimDeJogo() {
+            clearInterval(gameLoop);
+            clearInterval(obstacleMovementInterval);
+            clearInterval(timerInterval);
+            clearInterval(spawnInterval);
+            tempoFinalElement.textContent = timerElement.textContent;
+            gameOver.style.display = 'block';
+            
+            // Salvar a pontuação ao fim do jogo
+            salvarPontuacao(timerElement.textContent);
+        }
+
+        function reiniciarJogo() {
+            // Limpar todos os intervalos anteriores para garantir
+            clearInterval(gameLoop);
+            clearInterval(obstacleMovementInterval);
+            clearInterval(timerInterval);
+            clearInterval(spawnInterval);
+            
+            obstacles.forEach(obs => obs.element.remove());
+            obstacles.length = 0;
+            
+            enemies.slice(2).forEach(enemy => {
+                if (enemy && enemy.element) {
+                    enemy.element.remove();
+                }
+            });
+            enemies = enemies.slice(0, 2);
+            
+            playerPos = { x: window.innerWidth/2, y: window.innerHeight/2 };
+            enemies[0].pos = { x: 50, y: 50 };
+            enemies[0].direcao = Math.random() * 2 * Math.PI;
+            enemies[1].pos = { x: window.innerWidth - 80, y: window.innerHeight - 80 };
+            
+            updatePlayerPosition();
+            updateEnemyPosition();
+            gameOver.style.display = 'none';
+            
+            criarObstaculos();
+            iniciarJogo();
+        }
+
+        function iniciarJogo() {
+            startTime = Date.now();
+            timerElement.textContent = "00:00";
+            lastNavMeshUpdate = 0;
+            
+            gameLoop = setInterval(() => {
+                moverInimigo();
+                atualizarMovimentoJogador();
+            }, 1000/60);
+
+            obstacleMovementInterval = setInterval(moverObstaculos, 1000/30);
+            timerInterval = setInterval(atualizarTimer, 1000);
+            spawnInterval = setInterval(criarNovoInimigo, 4000);
+        }
+
+        function atualizarMovimentoJogador() {
+            let newX = playerPos.x;
+            let newY = playerPos.y;
+
+            if (teclasPressionadas['ArrowUp']) newY -= playerSpeed;
+            if (teclasPressionadas['ArrowDown']) newY += playerSpeed;
+            if (teclasPressionadas['ArrowLeft']) newX -= playerSpeed;
+            if (teclasPressionadas['ArrowRight']) newX += playerSpeed;
+
+            if (newX >= 0 && newX <= window.innerWidth - 30 && 
+                newY >= 0 && newY <= window.innerHeight - 30) {
+                if (!checkCollision(newX, newY)) {
+                    playerPos.x = newX;
+                    playerPos.y = newY;
+                    updatePlayerPosition();
+                }
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            reiniciarJogo();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            teclasPressionadas[e.key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            teclasPressionadas[e.key] = false;
+        });
+
+        criarObstaculos();
+        updatePlayerPosition();
+        updateEnemyPosition();
+        iniciarJogo();
+    </script>
+</body>
+</html>
