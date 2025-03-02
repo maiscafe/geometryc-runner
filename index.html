@@ -374,6 +374,87 @@
             box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
             transform: scale(1.05);
         }
+        
+        /* Estilos para a tela de configuração */
+        #telaConfiguracao {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            box-shadow: inset 0 0 150px rgba(138, 43, 226, 0.3);
+        }
+        
+        #telaConfiguracao h2 {
+            color: #bd93f9;
+            font-size: 42px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        #configForm {
+            width: 80%;
+            max-width: 550px;
+            background: rgba(10, 10, 10, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #8a2be2;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            text-align: center;
+        }
+        
+        #configForm label {
+            display: block;
+            color: #f8f8f2;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        #configForm input {
+            padding: 12px 15px;
+            font-size: 16px;
+            width: 80%;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #8a2be2;
+            background: rgba(30, 30, 30, 0.8);
+            color: #f8f8f2;
+            outline: none;
+        }
+        
+        #configForm input:focus {
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.8);
+        }
+        
+        #configForm button {
+            padding: 12px 25px;
+            font-size: 18px;
+            background: transparent;
+            border: 2px solid #8a2be2;
+            color: #bd93f9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        #configForm button:hover {
+            background: #8a2be2;
+            color: white;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -392,6 +473,7 @@
             <div class="menu-button" onclick="iniciarNovoJogo()">Iniciar Aventura</div>
             <div class="menu-button" onclick="verRanking()">Hall da Fama</div>
             <div class="menu-button" onclick="abrirLoja()">Arsenal</div>
+            <div class="menu-button" onclick="abrirConfiguracao()">Configuração</div>
             <div class="menu-button" onclick="fazerDoacao()">Apoiar</div>
             <div id="pontuacoes" style="display: none;">
                 <p id="ultimaPontuacao">Última sobrevivência: 00:00</p>
@@ -412,6 +494,15 @@
             <input type="text" id="playerNick" maxlength="15" placeholder="Seu nome">
             <button onclick="salvarNick()">Registrar</button>
         </div>
+        <div id="telaConfiguracao">
+            <h2>Configuração</h2>
+            <div id="configForm">
+                <label for="playerNickConfig">Seu nome:</label>
+                <input type="text" id="playerNickConfig" maxlength="15" placeholder="Seu nome">
+                <button onclick="salvarConfiguracao()">Salvar</button>
+            </div>
+            <div class="menu-button" onclick="voltarTelaInicial()">Voltar ao Menu</div>
+        </div>
     </div>
 
     <script>
@@ -431,6 +522,8 @@
         const nickForm = document.getElementById('nickForm');
         const tempoNickElement = document.getElementById('tempoNick');
         const playerNickInput = document.getElementById('playerNick');
+        const telaConfiguracao = document.getElementById('telaConfiguracao');
+        const playerNickConfig = document.getElementById('playerNickConfig');
         
         let startTime;
         let playerPos = { x: window.innerWidth/2, y: window.innerHeight/2 };
@@ -463,11 +556,45 @@
         let ranking = [];
         // Tempo atual para salvar no ranking
         let tempoAtual = "00:00";
+        // Nome do jogador
+        let playerName = "";
+
+        // Verificar se o jogador já tem um nome salvo
+        function verificarNomeJogador() {
+            const nomeSalvo = localStorage.getItem('playerName');
+            if (nomeSalvo) {
+                playerName = nomeSalvo;
+            } else {
+                // Se não tiver nome salvo, solicitar na primeira vez
+                solicitarNomeJogador();
+            }
+        }
+
+        function solicitarNomeJogador() {
+            const nome = prompt("Bem-vindo! Como devemos chamá-lo?", "Jogador") || "Jogador";
+            playerName = nome.substring(0, 15); // Limitar a 15 caracteres
+            localStorage.setItem('playerName', playerName);
+        }
+
+        // Funções para a tela de configuração
+        function abrirConfiguracao() {
+            telaInicial.style.display = 'none';
+            telaConfiguracao.style.display = 'flex';
+            playerNickConfig.value = playerName;
+        }
+
+        function salvarConfiguracao() {
+            const novoNome = playerNickConfig.value.trim() || "Jogador";
+            playerName = novoNome.substring(0, 15); // Limitar a 15 caracteres
+            localStorage.setItem('playerName', playerName);
+            voltarTelaInicial();
+        }
 
         // Funções para a tela inicial
         function iniciarNovoJogo() {
             telaInicial.style.display = 'none';
             telaRanking.style.display = 'none';
+            telaConfiguracao.style.display = 'none';
             pontuacoesDiv.style.display = 'none';
             reiniciarJogo();
             jogoEmAndamento = true;
@@ -528,6 +655,7 @@
         function voltarTelaInicial() {
             gameOver.style.display = 'none';
             telaRanking.style.display = 'none';
+            telaConfiguracao.style.display = 'none';
             telaInicial.style.display = 'flex';
             pontuacoesDiv.style.display = 'block';
             jogoEmAndamento = false;
@@ -574,27 +702,36 @@
             if (melhorSalva === "" || compararTempos(tempo, melhorSalva)) {
                 melhorPontuacao = tempo;
                 setCookie("melhorPontuacao", tempo, 30);
+                
+                // Adicionar ao ranking apenas se for a melhor pontuação ou a primeira
+                adicionarAoRanking(playerName, tempoAtual);
             } else {
                 melhorPontuacao = melhorSalva;
             }
             
-            // Mostrar formulário para inserir nick
-            mostrarFormularioNick(tempo);
+            // Mostrar tela de fim de jogo
+            gameOver.style.display = 'block';
         }
         
         function mostrarFormularioNick(tempo) {
             tempoNickElement.textContent = tempo;
             nickForm.style.display = 'block';
-            playerNickInput.value = '';
+            playerNickInput.value = playerName;
             playerNickInput.maxLength = 15; // Limitar a 15 caracteres
             playerNickInput.focus();
         }
         
         function salvarNick() {
             const nick = playerNickInput.value.trim() || "Anônimo";
+            playerName = nick.substring(0, 15);
+            localStorage.setItem('playerName', playerName);
             
-            // Adicionar ao ranking
-            adicionarAoRanking(nick.substring(0, 15), tempoAtual);
+            // Verificar se o tempo atual é melhor que o melhor tempo salvo
+            const melhorSalva = getCookie("melhorPontuacao");
+            if (melhorSalva === "" || compararTempos(tempoAtual, melhorSalva)) {
+                // Adicionar ao ranking apenas se for a melhor pontuação ou a primeira
+                adicionarAoRanking(playerName, tempoAtual);
+            }
             
             // Fechar formulário
             nickForm.style.display = 'none';
@@ -607,11 +744,21 @@
             // Carregar ranking atual
             carregarRanking();
             
-            // Adicionar nova entrada
-            ranking.push({
-                nick: nick,
-                tempo: tempo
-            });
+            // Verificar se o jogador já tem uma entrada no ranking
+            const indiceJogador = ranking.findIndex(item => item.nick === nick);
+            
+            if (indiceJogador !== -1) {
+                // Se o jogador já existe no ranking, atualizar apenas se o tempo for melhor
+                if (compararTempos(tempo, ranking[indiceJogador].tempo)) {
+                    ranking[indiceJogador].tempo = tempo;
+                }
+            } else {
+                // Se o jogador não existe no ranking, adicionar nova entrada
+                ranking.push({
+                    nick: nick,
+                    tempo: tempo
+                });
+            }
             
             // Ordenar ranking (tempos maiores são melhores)
             ranking.sort((a, b) => {
@@ -769,8 +916,8 @@
         }
         
         function explodir(inimigoAmarelo) {
-            // Raio da explosão
-            const raioExplosao = 150;
+            // Raio da explosão aumentado
+            const raioExplosao = 180; // Aumentado de 150 para 180
             
             // Criar efeito visual de explosão grande
             const explosao = document.createElement('div');
