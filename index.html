@@ -1170,24 +1170,25 @@
             // Determinar o tipo de inimigo a ser criado (incluindo o amarelo, azul e laranja)
             const random = Math.random();
             let tipoInimigo;
-            
-            if (random < 0.10) {
-                // 10% de chance de criar inimigo amarelo
-                return criarInimigoAmarelo(); // Retornar aqui pois criarInimigoAmarelo já adiciona à lista
-            } else if (random < 0.20) {
-                // 10% de chance de criar inimigo azul (gelo)
-                return criarInimigoAzul(); // Retornar aqui pois criarInimigoAzul já adiciona à lista
-            } else if (random < 0.30) {
-                // 10% de chance de criar inimigo laranja (teleportador)
-                return criarInimigoLaranja(); // Retornar aqui pois criarInimigoLaranja já adiciona à lista
-            } else if (random < 0.60) {
-                // 30% de chance de criar inimigo roxo
-                tipoInimigo = 'purple';
-            } else {
-                // 30% de chance de criar inimigo verde
-                tipoInimigo = 'green';
+
+            switch (true) {
+                case (random < 0.15):
+                    // 10% de chance de criar inimigo amarelo
+                    return criarInimigoAmarelo(); // Retornar aqui pois criarInimigoAmarelo já adiciona à lista
+                case (random < 0.25):
+                    // 10% de chance de criar inimigo azul (gelo)
+                    return criarInimigoAzul(); // Retornar aqui pois criarInimigoAzul já adiciona à lista
+                case (random < 0.35):
+                    // 10% de chance de criar inimigo laranja (teleportador)
+                    return criarInimigoLaranja(); // Retornar aqui pois criarInimigoLaranja já adiciona à lista
+                case (random < 0.55):
+                    // 30% de chance de criar inimigo roxo
+                    tipoInimigo = 'purple';
+                    break;
+                default:
+                    // 30% de chance de criar inimigo verde
+                    tipoInimigo = 'green';
             }
-            
             const velocidadeBase = tipoInimigo === 'purple' ? enemySpeed : enemy2Speed;
             // Adicionar aleatoriedade à velocidade (até 50% a mais)
             const fatorVelocidade = 1 + Math.random() * 0.5;
