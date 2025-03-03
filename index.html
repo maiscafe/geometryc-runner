@@ -60,6 +60,58 @@
             box-shadow: 0 0 15px rgba(241, 250, 140, 0.7);
         }
         
+        .enemy-blue {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #8be9fd, #0077b6);
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            box-shadow: 0 0 15px rgba(139, 233, 253, 0.7);
+        }
+        
+        .slow-area {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(139, 233, 253, 0.3), rgba(0, 119, 182, 0.1));
+            border-radius: 50%;
+            border: 2px solid rgba(139, 233, 253, 0.5);
+            pointer-events: none;
+            z-index: -1;
+            animation: pulse 2s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        .player-slowed {
+            filter: drop-shadow(0 0 8px rgba(139, 233, 253, 0.8));
+            animation: slow-pulse 1s infinite alternate;
+        }
+        
+        @keyframes slow-pulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        
+        .enemy-blue::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 5px;
+            left: 5px;
+            background: rgba(255, 255, 255, 0.7);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            animation: rotate 3s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         .enemy-yellow.piscando {
             animation: piscar 0.5s infinite alternate;
         }
@@ -154,6 +206,31 @@
             letter-spacing: 2px;
         }
 
+        #extraLifeIcon, #explosionIcon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+            border: 1px solid #8a2be2;
+        }
+
+        #extraLifeIcon {
+            background: url('shield-icon.png') no-repeat center center;
+            background-size: cover;
+        }
+
+        #explosionIcon {
+            background: url('explosion-icon.png') no-repeat center center;
+            background-size: cover;
+            top: 60px;
+        }
+
         /* Estilos para a tela inicial */
         #telaInicial {
             position: absolute;
@@ -168,6 +245,12 @@
             align-items: center;
             z-index: 200;
             box-shadow: inset 0 0 150px rgba(138, 43, 226, 0.3);
+            animation: backgroundAnimation 10s infinite alternate;
+        }
+
+        @keyframes backgroundAnimation {
+            0% { background: linear-gradient(135deg, #0a0a0a, #1a1a1a); }
+            100% { background: linear-gradient(135deg, #1a1a1a, #0a0a0a); }
         }
 
         #telaInicial h1 {
@@ -222,11 +305,6 @@
         .menu-button:hover::before {
             opacity: 1;
             animation: rotate 2s linear infinite;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         #ultimaPontuacao, #melhorPontuacao {
@@ -455,11 +533,187 @@
             box-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
             transform: scale(1.05);
         }
+
+        /* Estilos para a tela de perks */
+        #telaPerks {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            box-shadow: inset 0 0 150px rgba(138, 43, 226, 0.3);
+        }
+
+        #telaPerks h2 {
+            color: #bd93f9;
+            font-size: 42px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .perk-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: transparent;
+            color: #bd93f9;
+            border: 2px solid #8a2be2;
+            border-radius: 50px;
+            margin: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 220px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .perk-button:hover {
+            background: #8a2be2;
+            color: white;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            transform: scale(1.05);
+        }
+
+        .perk-button::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #8a2be2, #bd93f9, #8a2be2);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .perk-button:hover::before {
+            opacity: 1;
+            animation: rotate 2s linear infinite;
+        }
+
+        /* Estilos para a loja */
+        #telaLoja {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+            box-shadow: inset 0 0 150px rgba(138, 43, 226, 0.3);
+        }
+
+        #telaLoja h2 {
+            color: #bd93f9;
+            font-size: 42px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(138, 43, 226, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .color-picker, .background-picker {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .color-option, .background-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 10px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .color-option:hover, .background-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option {
+            background: radial-gradient(circle at 30% 30%, #c17aff, #8a2be2);
+        }
+
+        .background-option {
+            background: linear-gradient(45deg, #0a0a0a, #1a1a1a);
+        }
+
+        .menu-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: transparent;
+            color: #bd93f9;
+            border: 2px solid #8a2be2;
+            border-radius: 50px;
+            margin: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 220px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-button:hover {
+            background: #8a2be2;
+            color: white;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            transform: scale(1.05);
+        }
+
+        .menu-button::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #8a2be2, #bd93f9, #8a2be2);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .menu-button:hover::before {
+            opacity: 1;
+            animation: rotate 2s linear infinite;
+        }
+
+        .label {
+            color: #bd93f9;
+            font-size: 18px;
+            margin: 8px 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
     <div id="gameArea">
         <div id="timer">00:00</div>
+        <div id="extraLifeIcon"></div>
+        <div id="explosionIcon"></div>
         <div id="player"></div>
         <div id="enemy" class="enemy enemy-purple"></div>
         <div id="enemy2" class="enemy enemy-green"></div>
@@ -503,7 +757,50 @@
             </div>
             <div class="menu-button" onclick="voltarTelaInicial()">Voltar ao Menu</div>
         </div>
+        <div id="telaPerks">
+            <h2>Escolha um Perk</h2>
+            <div class="perk-button" onclick="escolherPerk('extraLife')">Vida Extra</div>
+            <div class="perk-button" onclick="escolherPerk('speedBoost')">Aumentar Velocidade</div>
+            <div class="perk-button" onclick="escolherPerk('explosion')">Explosão</div>
+        </div>
+        <div id="telaLoja">
+            <h2>Arsenal</h2>
+            <div class="label">PLAYER</div>
+            <div class="color-picker">
+                <div class="color-option" onclick="alterarCorPersonagem('#c17aff', '#8a2be2')"></div>
+                <div class="color-option" style="background: radial-gradient(circle at 30% 30%, #ff79c6, #bd93f9);" onclick="alterarCorPersonagem('#ff79c6', '#bd93f9')"></div>
+                <div class="color-option" style="background: radial-gradient(circle at 30% 30%, #50fa7b, #00b894);" onclick="alterarCorPersonagem('#50fa7b', '#00b894')"></div>
+            </div>
+            <div class="label">BACKGROUND</div>
+            <div class="background-picker">
+                <div class="background-option" onclick="alterarBackground('linear-gradient(45deg, #0a0a0a, #1a1a1a)')"></div>
+                <div class="background-option" style="background: linear-gradient(45deg, #1a1a1a, #0a0a0a);" onclick="alterarBackground('linear-gradient(45deg, #1a1a1a, #0a0a0a)')"></div>
+                <div class="background-option" style="background: linear-gradient(45deg, #0a0a0a, #2a2a2a);" onclick="alterarBackground('linear-gradient(45deg, #0a0a0a, #2a2a2a)')"></div>
+            </div>
+            <div class="menu-button" onclick="voltarTelaInicial()">Voltar ao Menu</div>
+        </div>
     </div>
+    <script>
+        function alterarCorPersonagem(cor1, cor2) {
+            const player = document.getElementById('player');
+            player.style.background = `radial-gradient(circle at 30% 30%, ${cor1}, ${cor2})`;
+        }
+
+        function alterarBackground(background) {
+            const gameArea = document.getElementById('gameArea');
+            gameArea.style.background = background;
+        }
+
+        function abrirLoja() {
+            document.getElementById('telaLoja').style.display = 'flex';
+            document.getElementById('telaInicial').style.display = 'none';
+        }
+
+        function voltarTelaInicial() {
+            document.getElementById('telaLoja').style.display = 'none';
+            document.getElementById('telaInicial').style.display = 'flex';
+        }
+    </script>
 
     <script>
         const player = document.getElementById('player');
@@ -524,12 +821,15 @@
         const playerNickInput = document.getElementById('playerNick');
         const telaConfiguracao = document.getElementById('telaConfiguracao');
         const playerNickConfig = document.getElementById('playerNickConfig');
+        const telaPerks = document.getElementById('telaPerks');
+        const extraLifeIcon = document.getElementById('extraLifeIcon');
+        const explosionIcon = document.getElementById('explosionIcon');
         
         let startTime;
         let playerPos = { x: window.innerWidth/2, y: window.innerHeight/2 };
         let enemyPos = { x: 50, y: 50 };
         let enemy2Pos = { x: window.innerWidth - 80, y: window.innerHeight - 80 };
-        const playerSpeed = 7;
+        let playerSpeed = 7;
         const enemySpeed = 4;
         const enemy2Speed = 3;
         const obstacles = [];
@@ -539,6 +839,7 @@
         let navMeshPoints = [];
         let timerInterval;
         let spawnInterval;
+        let perkInterval;
         let enemies = [
             {element: enemy, pos: enemyPos, speed: enemySpeed, type: 'purple', direcao: Math.random() * 2 * Math.PI},
             {element: enemy2, pos: enemy2Pos, speed: enemy2Speed, type: 'green'}
@@ -558,6 +859,21 @@
         let tempoAtual = "00:00";
         // Nome do jogador
         let playerName = "";
+        // Variável para controlar se o jogador está em uma área de desaceleração
+        let playerInSlowArea = false;
+        // Velocidade normal do jogador (para restaurar após sair da área de desaceleração)
+        const normalPlayerSpeed = 7;
+        // Velocidade reduzida quando em área de desaceleração
+        const slowedPlayerSpeed = 3;
+        // Variável para controlar o efeito de lentidão do inimigo azul
+        let playerSlowedByBlueEnemy = false;
+        let playerSlowTimer = null;
+        // Variáveis para controlar os perks
+        let extraLife = false;
+        let speedBoost = false;
+        let explosionAvailable = false;
+        // Variável para controlar o tempo de jogo
+        let tempoDecorrido = 0;
 
         // Verificar se o jogador já tem um nome salvo
         function verificarNomeJogador() {
@@ -606,12 +922,12 @@
             atualizarTelaRanking();
         }
 
-        function atualizarTelaRanking() {
+        async function atualizarTelaRanking() {
             // Limpar lista atual
             rankingList.innerHTML = '';
             
-            // Carregar ranking do localStorage
-            carregarRanking();
+            // Carregar ranking do JSON
+            await carregarRanking();
             
             // Exibir os 10 melhores
             const top10 = ranking.slice(0, 10);
@@ -645,7 +961,8 @@
         }
 
         function abrirLoja() {
-            alert("Loja em desenvolvimento!");
+            document.getElementById('telaLoja').style.display = 'flex';
+            document.getElementById('telaInicial').style.display = 'none';
         }
 
         function fazerDoacao() {
@@ -658,6 +975,7 @@
             telaConfiguracao.style.display = 'none';
             telaInicial.style.display = 'flex';
             pontuacoesDiv.style.display = 'block';
+            document.getElementById('telaLoja').style.display = 'none';
             jogoEmAndamento = false;
             
             // Parar todos os loops e intervalos do jogo
@@ -692,7 +1010,7 @@
             return "";
         }
 
-        function salvarPontuacao(tempo) {
+        async function salvarPontuacao(tempo) {
             ultimaPontuacao = tempo;
             setCookie("ultimaPontuacao", tempo, 30);
             tempoAtual = tempo;
@@ -704,7 +1022,7 @@
                 setCookie("melhorPontuacao", tempo, 30);
                 
                 // Adicionar ao ranking apenas se for a melhor pontuação ou a primeira
-                adicionarAoRanking(playerName, tempoAtual);
+                await adicionarAoRanking(playerName, tempoAtual);
             } else {
                 melhorPontuacao = melhorSalva;
             }
@@ -721,7 +1039,7 @@
             playerNickInput.focus();
         }
         
-        function salvarNick() {
+        async function salvarNick() {
             const nick = playerNickInput.value.trim() || "Anônimo";
             playerName = nick.substring(0, 15);
             localStorage.setItem('playerName', playerName);
@@ -730,7 +1048,7 @@
             const melhorSalva = getCookie("melhorPontuacao");
             if (melhorSalva === "" || compararTempos(tempoAtual, melhorSalva)) {
                 // Adicionar ao ranking apenas se for a melhor pontuação ou a primeira
-                adicionarAoRanking(playerName, tempoAtual);
+                await adicionarAoRanking(playerName, tempoAtual);
             }
             
             // Fechar formulário
@@ -740,9 +1058,9 @@
             verRanking();
         }
         
-        function adicionarAoRanking(nick, tempo) {
+        async function adicionarAoRanking(nick, tempo) {
             // Carregar ranking atual
-            carregarRanking();
+            await carregarRanking();
             
             // Verificar se o jogador já tem uma entrada no ranking
             const indiceJogador = ranking.findIndex(item => item.nick === nick);
@@ -765,21 +1083,42 @@
                 return compararTempos(a.tempo, b.tempo) ? -1 : 1;
             });
             
+            // Manter apenas os 10 melhores
+            ranking = ranking.slice(0, 10);
+            
             // Salvar ranking atualizado
-            salvarRanking();
+            await salvarRanking();
         }
         
-        function carregarRanking() {
-            const rankingJSON = localStorage.getItem('ranking');
-            if (rankingJSON) {
-                ranking = JSON.parse(rankingJSON);
-            } else {
+        async function carregarRanking() {
+            try {
+                const response = await fetch('ranking.json');
+                if (response.ok) {
+                    ranking = await response.json();
+                } else {
+                    ranking = [];
+                }
+            } catch (error) {
+                console.error('Erro ao carregar o ranking:', error);
                 ranking = [];
             }
         }
         
-        function salvarRanking() {
-            localStorage.setItem('ranking', JSON.stringify(ranking));
+        async function salvarRanking() {
+            try {
+                const response = await fetch('ranking.json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(ranking)
+                });
+                if (!response.ok) {
+                    throw new Error('Erro ao salvar o ranking');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar o ranking:', error);
+            }
         }
 
         function compararTempos(tempo1, tempo2) {
@@ -813,18 +1152,21 @@
             // Limitar o número máximo de inimigos para evitar sobrecarga
             if (enemies.length >= MAX_ENEMIES) return;
             
-            // Determinar o tipo de inimigo a ser criado (incluindo o amarelo)
+            // Determinar o tipo de inimigo a ser criado (incluindo o amarelo e azul)
             const random = Math.random();
             let tipoInimigo;
             
-            if (random < 0.2) {
-                // 20% de chance de criar inimigo amarelo
+            if (random < 0.15) {
+                // 15% de chance de criar inimigo amarelo
                 return criarInimigoAmarelo(); // Retornar aqui pois criarInimigoAmarelo já adiciona à lista
-            } else if (random < 0.5) {
-                // 40% de chance de criar inimigo roxo
+            } else if (random < 0.25) {
+                // 10% de chance de criar inimigo azul (gelo)
+                return criarInimigoAzul(); // Retornar aqui pois criarInimigoAzul já adiciona à lista
+            } else if (random < 0.55) {
+                // 30% de chance de criar inimigo roxo
                 tipoInimigo = 'purple';
             } else {
-                // 50% de chance de criar inimigo verde
+                // 45% de chance de criar inimigo verde
                 tipoInimigo = 'green';
             }
             
@@ -861,6 +1203,70 @@
                     y: Math.random() * 100 - 50
                 }
             });
+        }
+        
+        function criarInimigoAzul() {
+            // Criar inimigo azul (gelo)
+            const inimigoAzul = document.createElement('div');
+            inimigoAzul.className = 'enemy enemy-blue';
+            gameArea.appendChild(inimigoAzul);
+            
+            // Encontrar uma posição válida para o inimigo azul
+            let tentativas = 0;
+            let pos;
+            do {
+                pos = {
+                    x: Math.random() * (window.innerWidth - 30),
+                    y: Math.random() * (window.innerHeight - 30)
+                };
+                tentativas++;
+                if (tentativas > 50) return null; // Desistir após muitas tentativas
+            } while(checkCollision(pos.x, pos.y) || checkEnemyCollision(pos.x, pos.y));
+            
+            const novoInimigo = {
+                element: inimigoAzul,
+                pos: pos,
+                speed: 6, // Inimigo azul se move lentamente
+                type: 'blue',
+                congelou: false // Flag para controlar se já congelou o jogador
+            };
+            
+            enemies.push(novoInimigo);
+            
+            // Atualizar a posição do elemento
+            inimigoAzul.style.left = pos.x + 'px';
+            inimigoAzul.style.top = pos.y + 'px';
+            
+            return novoInimigo;
+        }
+        
+        // Função para aplicar o efeito de congelamento quando o jogador tocar no inimigo azul
+        function aplicarEfeitoCongelamento(inimigoAzul) {
+            if (inimigoAzul.congelou) return; // Evitar aplicar o efeito mais de uma vez
+            
+            inimigoAzul.congelou = true;
+            
+            // Guardar a velocidade original do jogador
+            const velocidadeOriginal = playerSpeed;
+            
+            // Reduzir a velocidade do jogador em 25%
+            playerSpeed *= 0.75;
+            
+            // Adicionar efeito visual ao jogador
+            player.classList.add('congelado');
+            
+            // Remover o inimigo azul
+            const index = enemies.findIndex(e => e === inimigoAzul);
+            if (index !== -1) {
+                gameArea.removeChild(inimigoAzul.element);
+                enemies.splice(index, 1);
+            }
+            
+            // Restaurar a velocidade normal após 5 segundos
+            setTimeout(() => {
+                playerSpeed = velocidadeOriginal;
+                player.classList.remove('congelado');
+            }, 5000);
         }
         
         function criarInimigoAmarelo() {
@@ -936,7 +1342,12 @@
             
             if (distanciaAoJogador <= raioExplosao) {
                 // Jogador atingido pela explosão
-                fimDeJogo();
+                if (extraLife) {
+                    extraLife = false;
+                    extraLifeIcon.style.display = 'none';
+                } else {
+                    fimDeJogo();
+                }
             }
             
             // Verificar quais inimigos estão dentro do raio da explosão
@@ -983,16 +1394,36 @@
         function criarExplosao(x, y) {
             const explosao = document.createElement('div');
             explosao.className = 'explosion';
-            explosao.style.width = '50px';
-            explosao.style.height = '50px';
+            
+            // Calcular o tamanho da explosão como 60% da menor dimensão da tela
+            const raioExplosao = Math.min(window.innerWidth, window.innerHeight) * 0.6;
+            explosao.style.width = `${raioExplosao}px`;
+            explosao.style.height = `${raioExplosao}px`;
+            
             explosao.style.backgroundColor = 'orange';
             explosao.style.borderRadius = '50%';
             explosao.style.position = 'absolute';
             explosao.style.zIndex = '200';
             explosao.style.animation = 'explode 0.5s forwards';
-            explosao.style.left = (x - 25) + 'px'; // Centralizar a explosão
-            explosao.style.top = (y - 25) + 'px';
+            explosao.style.left = (x - raioExplosao / 2) + 'px'; // Centralizar a explosão
+            explosao.style.top = (y - raioExplosao / 2) + 'px';
             gameArea.appendChild(explosao);
+            
+            // Eliminar todos os inimigos dentro do raio da explosão
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                const distancia = Math.sqrt(
+                    Math.pow(enemy.pos.x + 15 - x, 2) + 
+                    Math.pow(enemy.pos.y + 15 - y, 2)
+                );
+                
+                if (distancia <= raioExplosao) {
+                    if (enemy && enemy.element) {
+                        enemy.element.remove();
+                        enemies.splice(i, 1);
+                    }
+                }
+            }
             
             // Adicionar estilo de animação se não existir
             if (!document.getElementById('explosionAnimation')) {
@@ -1540,8 +1971,17 @@
                 const distancia = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distancia < 15) {
-                    fimDeJogo();
-                    return;
+                    if (enemy.type === 'blue') {
+                        aplicarEfeitoCongelamento(enemy);
+                    } else {
+                        if (extraLife) {
+                            extraLife = false;
+                            extraLifeIcon.style.display = 'none';
+                        } else {
+                            fimDeJogo();
+                            return;
+                        }
+                    }
                 }
 
                 if(enemy.type === 'purple') {
@@ -1559,6 +1999,7 @@
             clearInterval(obstacleMovementInterval);
             clearInterval(timerInterval);
             clearInterval(spawnInterval);
+            clearInterval(perkInterval);
             tempoFinalElement.textContent = timerElement.textContent;
             gameOver.style.display = 'block';
             
@@ -1572,6 +2013,7 @@
             clearInterval(obstacleMovementInterval);
             clearInterval(timerInterval);
             clearInterval(spawnInterval);
+            clearInterval(perkInterval);
             
             obstacles.forEach(obs => obs.element.remove());
             obstacles.length = 0;
@@ -1597,8 +2039,7 @@
         }
 
         function iniciarJogo() {
-            startTime = Date.now();
-            timerElement.textContent = "00:00";
+            startTime = Date.now() - tempoDecorrido * 1000;
             lastNavMeshUpdate = 0;
             
             gameLoop = setInterval(() => {
@@ -1609,16 +2050,17 @@
             obstacleMovementInterval = setInterval(moverObstaculos, 1000/30);
             timerInterval = setInterval(atualizarTimer, 1000);
             spawnInterval = setInterval(criarNovoInimigo, 4000);
+            perkInterval = setInterval(mostrarTelaPerks, 60000); // Mostrar tela de perks a cada 1 minuto
         }
 
         function atualizarMovimentoJogador() {
             let newX = playerPos.x;
             let newY = playerPos.y;
 
-            if (teclasPressionadas['ArrowUp']) newY -= playerSpeed;
-            if (teclasPressionadas['ArrowDown']) newY += playerSpeed;
-            if (teclasPressionadas['ArrowLeft']) newX -= playerSpeed;
-            if (teclasPressionadas['ArrowRight']) newX += playerSpeed;
+            if (teclasPressionadas['ArrowUp'] || teclasPressionadas['w']) newY -= playerSpeed;
+            if (teclasPressionadas['ArrowDown'] || teclasPressionadas['s']) newY += playerSpeed;
+            if (teclasPressionadas['ArrowLeft'] || teclasPressionadas['a']) newX -= playerSpeed;
+            if (teclasPressionadas['ArrowRight'] || teclasPressionadas['d']) newX += playerSpeed;
 
             if (newX >= 0 && newX <= window.innerWidth - 30 && 
                 newY >= 0 && newY <= window.innerHeight - 30) {
@@ -1630,12 +2072,42 @@
             }
         }
 
+        function mostrarTelaPerks() {
+            clearInterval(gameLoop);
+            clearInterval(obstacleMovementInterval);
+            clearInterval(spawnInterval);
+            telaPerks.style.display = 'flex';
+        }
+
+        function escolherPerk(perk) {
+            telaPerks.style.display = 'none';
+            switch (perk) {
+                case 'extraLife':
+                    extraLife = true;
+                    extraLifeIcon.style.display = 'block';
+                    break;
+                case 'speedBoost':
+                    playerSpeed *= 1.5;
+                    break;
+                case 'explosion':
+                    explosionAvailable = true;
+                    explosionIcon.style.display = 'block';
+                    break;
+            }
+            iniciarJogo();
+        }
+
         window.addEventListener('resize', () => {
             reiniciarJogo();
         });
 
         document.addEventListener('keydown', (e) => {
             teclasPressionadas[e.key] = true;
+            if (e.key === ' ' && explosionAvailable) {
+                criarExplosao(playerPos.x + 15, playerPos.y + 15);
+                explosionAvailable = false;
+                explosionIcon.style.display = 'none';
+            }
         });
 
         document.addEventListener('keyup', (e) => {
