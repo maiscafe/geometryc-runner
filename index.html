@@ -722,6 +722,33 @@
             letter-spacing: 1px;
             text-transform: uppercase;
         }
+
+        /* Estilos para o cursor no mobile */
+        #mobileCursor {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            position: absolute;
+            display: none;
+            z-index: 200;
+        }
+
+        /* Estilos para o botão de explosão no mobile */
+        #explosionButton {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 69, 0, 0.7);
+            border-radius: 50%;
+            display: none;
+            z-index: 200;
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.7);
+            border: 2px solid #8a2be2;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -794,6 +821,8 @@
             </div>
             <div class="menu-button" onclick="voltarTelaInicial()">Voltar ao Menu</div>
         </div>
+        <div id="mobileCursor"></div>
+        <div id="explosionButton" onclick="usarExplosao()"></div>
     </div>
     <script>
         function alterarCorPersonagem(cor1, cor2) {
@@ -815,9 +844,26 @@
             document.getElementById('telaLoja').style.display = 'none';
             document.getElementById('telaInicial').style.display = 'flex';
         }
-    </script>
 
-    <script>
+        function usarExplosao() {
+            if (explosionAvailable) {
+                criarExplosao(playerPos.x + 15, playerPos.y + 15);
+                explosionAvailable = false;
+                explosionIcon.style.display = 'none';
+            }
+        }
+
+        function detectarMobile() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                document.getElementById('mobileCursor').style.display = 'block';
+                document.getElementById('explosionButton').style.display = 'block';
+                screen.orientation.lock('landscape');
+            }
+        }
+
+        window.addEventListener('load', detectarMobile);
+
         const player = document.getElementById('player');
         const enemy = document.getElementById('enemy');
         const enemy2 = document.getElementById('enemy2');
@@ -839,6 +885,7 @@
         const telaPerks = document.getElementById('telaPerks');
         const extraLifeIcon = document.getElementById('extraLifeIcon');
         const explosionIcon = document.getElementById('explosionIcon');
+        const mobileCursor = document.getElementById('mobileCursor');
         
         let startTime;
         let playerPos = { x: window.innerWidth/2, y: window.innerHeight/2 };
@@ -2205,6 +2252,18 @@
 
         document.addEventListener('keyup', (e) => {
             teclasPressionadas[e.key] = false;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const rect = gameArea.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            mobileCursor.style.left = `${x - 15}px`;
+            mobileCursor.style.top = `${y - 15}px`;
+            playerPos.x = x - 15;
+            playerPos.y = y - 15;
+            updatePlayerPosition();
         });
 
         criarObstaculos();
