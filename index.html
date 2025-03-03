@@ -67,6 +67,21 @@
             clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
             box-shadow: 0 0 15px rgba(139, 233, 253, 0.7);
         }
+
+        .enemy-orange {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #ffb86c, #ff4500);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.7);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
         
         .slow-area {
             position: absolute;
@@ -1106,7 +1121,7 @@
         
         async function salvarRanking() {
             try {
-                const response = await fetch('ranking.json', {
+                const response = await fetch('saveRanking', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1152,21 +1167,24 @@
             // Limitar o número máximo de inimigos para evitar sobrecarga
             if (enemies.length >= MAX_ENEMIES) return;
             
-            // Determinar o tipo de inimigo a ser criado (incluindo o amarelo e azul)
+            // Determinar o tipo de inimigo a ser criado (incluindo o amarelo, azul e laranja)
             const random = Math.random();
             let tipoInimigo;
             
-            if (random < 0.15) {
-                // 15% de chance de criar inimigo amarelo
+            if (random < 0.10) {
+                // 10% de chance de criar inimigo amarelo
                 return criarInimigoAmarelo(); // Retornar aqui pois criarInimigoAmarelo já adiciona à lista
-            } else if (random < 0.25) {
+            } else if (random < 0.20) {
                 // 10% de chance de criar inimigo azul (gelo)
                 return criarInimigoAzul(); // Retornar aqui pois criarInimigoAzul já adiciona à lista
-            } else if (random < 0.55) {
+            } else if (random < 0.30) {
+                // 10% de chance de criar inimigo laranja (teleportador)
+                return criarInimigoLaranja(); // Retornar aqui pois criarInimigoLaranja já adiciona à lista
+            } else if (random < 0.60) {
                 // 30% de chance de criar inimigo roxo
                 tipoInimigo = 'purple';
             } else {
-                // 45% de chance de criar inimigo verde
+                // 30% de chance de criar inimigo verde
                 tipoInimigo = 'green';
             }
             
@@ -1321,6 +1339,67 @@
             return novoInimigo;
         }
         
+        function criarInimigoLaranja() {
+            // Criar inimigo laranja (teleportador)
+            const inimigoLaranja = document.createElement('div');
+            inimigoLaranja.className = 'enemy enemy-orange';
+            gameArea.appendChild(inimigoLaranja);
+            
+            // Encontrar uma posição válida para o inimigo laranja
+            let tentativas = 0;
+            let pos;
+            do {
+                pos = {
+                    x: Math.random() * (window.innerWidth - 30),
+                    y: Math.random() * (window.innerHeight - 30)
+                };
+                tentativas++;
+                if (tentativas > 50) return null; // Desistir após muitas tentativas
+            } while(checkCollision(pos.x, pos.y) || checkEnemyCollision(pos.x, pos.y));
+            
+            const novoInimigo = {
+                element: inimigoLaranja,
+                pos: pos,
+                speed: 5, // Inimigo laranja se move rapidamente
+                type: 'orange',
+                teleportar: true // Flag para controlar se deve teleportar
+            };
+            
+            enemies.push(novoInimigo);
+            
+            // Atualizar a posição do elemento
+            inimigoLaranja.style.left = pos.x + 'px';
+            inimigoLaranja.style.top = pos.y + 'px';
+            
+            // Iniciar teleporte a cada 3 segundos
+            setInterval(() => {
+                if (novoInimigo.teleportar) {
+                    teleportarInimigo(novoInimigo);
+                }
+            }, 3000);
+            
+            return novoInimigo;
+        }
+        
+        function teleportarInimigo(inimigoLaranja) {
+            // Encontrar uma nova posição válida para o inimigo laranja
+            let tentativas = 0;
+            let novaPos;
+            do {
+                novaPos = {
+                    x: Math.random() * (window.innerWidth - 30),
+                    y: Math.random() * (window.innerHeight - 30)
+                };
+                tentativas++;
+                if (tentativas > 50) return; // Desistir após muitas tentativas
+            } while(checkCollision(novaPos.x, novaPos.y) || checkEnemyCollision(novaPos.x, novaPos.y));
+            
+            // Atualizar a posição do inimigo laranja
+            inimigoLaranja.pos = novaPos;
+            inimigoLaranja.element.style.left = novaPos.x + 'px';
+            inimigoLaranja.element.style.top = novaPos.y + 'px';
+        }
+        
         function explodir(inimigoAmarelo) {
             // Raio da explosão aumentado
             const raioExplosao = 180; // Aumentado de 150 para 180
@@ -1447,10 +1526,17 @@
         }
 
         function atualizarTimer() {
+            if (telaPerks.style.display === 'flex') return; // Pausar o timer se a tela de perks estiver visível
+
             const tempoDecorrido = Math.floor((Date.now() - startTime) / 1000);
             const minutos = Math.floor(tempoDecorrido / 60);
             const segundos = tempoDecorrido % 60;
             timerElement.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            
+            // Mostrar tela de perks a cada múltiplo de 60 segundos
+            if (tempoDecorrido > 0 && tempoDecorrido % 60 === 0) {
+                mostrarTelaPerks();
+            }
         }
 
         function gerarNavMeshPoints() {
@@ -2057,10 +2143,10 @@
             let newX = playerPos.x;
             let newY = playerPos.y;
 
-            if (teclasPressionadas['ArrowUp'] || teclasPressionadas['w']) newY -= playerSpeed;
-            if (teclasPressionadas['ArrowDown'] || teclasPressionadas['s']) newY += playerSpeed;
-            if (teclasPressionadas['ArrowLeft'] || teclasPressionadas['a']) newX -= playerSpeed;
-            if (teclasPressionadas['ArrowRight'] || teclasPressionadas['d']) newX += playerSpeed;
+            if (teclasPressionadas['ArrowUp'] || teclasPressionadas['w'] || teclasPressionadas['W']) newY -= playerSpeed;
+            if (teclasPressionadas['ArrowDown'] || teclasPressionadas['s'] || teclasPressionadas['S']) newY += playerSpeed;
+            if (teclasPressionadas['ArrowLeft'] || teclasPressionadas['a'] || teclasPressionadas['A']) newX -= playerSpeed;
+            if (teclasPressionadas['ArrowRight'] || teclasPressionadas['d'] || teclasPressionadas['D']) newX += playerSpeed;
 
             if (newX >= 0 && newX <= window.innerWidth - 30 && 
                 newY >= 0 && newY <= window.innerHeight - 30) {
@@ -2094,7 +2180,13 @@
                     explosionIcon.style.display = 'block';
                     break;
             }
-            iniciarJogo();
+            gameLoop = setInterval(() => {
+                moverInimigo();
+                atualizarMovimentoJogador();
+            }, 1000/60);
+
+            obstacleMovementInterval = setInterval(moverObstaculos, 1000/30);
+            spawnInterval = setInterval(criarNovoInimigo, 4000);
         }
 
         window.addEventListener('resize', () => {
